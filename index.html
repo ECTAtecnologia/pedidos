@@ -8,6 +8,19 @@
     <script src="https://unpkg.com/vanilla-masker@1.1.1/lib/vanilla-masker.js"></script>
 </head>
 <body>
+    <!-- Script de verificação do RawBT -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            setTimeout(function() {
+                if (typeof rawbt === 'undefined') {
+                    alert('Atenção: Este site deve ser acessado pelo navegador do aplicativo RawBT para funcionar com a impressora.');
+                } else {
+                    console.log('RawBT detectado com sucesso!');
+                }
+            }, 1000);
+        });
+    </script>
+
     <h2>Pedido do Cliente</h2>
     <form id="pedidoForm">
         <div class="form-group">
@@ -49,6 +62,8 @@
 
         <button type="button" onclick="imprimirPedido()">Imprimir Pedido</button>
     </form>
+
+    <!-- Scripts -->
     <script src="script.js"></script>
 </body>
 </html>
