@@ -19,25 +19,18 @@
     </button>
 
     <script>
-        // Função para imprimir usando diferentes interfaces do RawBT
+        // Função para imprimir
         function printRawBT(texto) {
             try {
-                // Tenta diferentes métodos de impressão
-                if (typeof RawBT !== 'undefined') {
-                    RawBT.print(texto);
+                if (typeof window.print !== 'undefined') {
+                    window.print.print(texto);
                     return true;
-                } else if (typeof window.RawBT !== 'undefined') {
-                    window.RawBT.print(texto);
-                    return true;
-                } else if (typeof window.Android !== 'undefined') {
-                    window.Android.printText(texto);
-                    return true;
-                } else if (typeof Android !== 'undefined') {
-                    Android.printText(texto);
+                } else if (typeof print !== 'undefined') {
+                    print.print(texto);
                     return true;
                 }
                 
-                alert('Interface de impressão não encontrada.\n\nPor favor, verifique:\n1. Se você está usando o app RawBT\n2. Se a impressora está conectada no app');
+                alert('Não foi possível encontrar a interface de impressão.\n\nPor favor:\n1. Certifique-se de estar usando o navegador interno do RawBT\n2. Verifique se a impressora está conectada');
                 return false;
             } catch (e) {
                 alert('Erro ao imprimir: ' + e.message);
@@ -47,8 +40,12 @@
 
         // Função de teste simples
         function testarImpressora() {
-            console.log('Tentando imprimir teste...');
-            const textoTeste = "=== TESTE DE IMPRESSAO ===\n\nFuncionando!\n\n\n";
+            const textoTeste = "\x1B\x40" +  // Initialize printer
+                              "\x1B\x61\x01" +  // Center alignment
+                              "=== TESTE DE IMPRESSAO ===\n\n" +
+                              "Funcionando!\n\n\n" +
+                              "\x1B\x64\x02";  // Feed 2 lines
+            
             if (printRawBT(textoTeste)) {
                 alert('Comando de impressão enviado!');
             }
@@ -64,14 +61,19 @@
             const valor = document.getElementById('valor').value;
 
             const texto = 
-                "===== PEDIDO =====\n" +
+                "\x1B\x40" +  // Initialize printer
+                "\x1B\x61\x01" +  // Center alignment
+                "===== PEDIDO =====\n\n" +
+                "\x1B\x61\x00" +  // Left alignment
                 "Cliente: " + nome + "\n" +
                 "Telefone: " + telefone + "\n" +
-                "Produtos: " + produtos + "\n" +
-                "Pagamento: " + pagamento + "\n" +
+                "\nProdutos:\n" + produtos + "\n" +
+                "\nPagamento: " + pagamento + "\n" +
                 "Endereco: " + endereco + "\n" +
                 "Valor: " + valor + "\n" +
-                "================\n\n\n";
+                "\x1B\x61\x01" +  // Center alignment
+                "================\n\n\n" +
+                "\x1B\x64\x02";  // Feed 2 lines
 
             if (printRawBT(texto)) {
                 alert('Pedido enviado para impressão!');
@@ -90,12 +92,6 @@
                 delimiter: '.',
                 unit: 'R$ '
             });
-
-            // Verifica interfaces disponíveis
-            console.log('RawBT disponível:', typeof RawBT !== 'undefined');
-            console.log('window.RawBT disponível:', typeof window.RawBT !== 'undefined');
-            console.log('Android disponível:', typeof Android !== 'undefined');
-            console.log('window.Android disponível:', typeof window.Android !== 'undefined');
         }
     </script>
 </body>
