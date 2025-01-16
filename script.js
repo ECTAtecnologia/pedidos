@@ -32,21 +32,35 @@ function imprimirPedido() {
 
     // Formata o texto para impressão
     const textoImpressao = 
+        "\x1B\x40" +          // Initialize printer
+        "\x1B\x61\x01" +      // Center alignment
         "PEDIDO\n" +
         "=================\n" +
         `Cliente: ${nome}\n` +
         `Telefone: ${telefone}\n` +
         `\nProdutos:\n${produtos}\n` +
         `\nForma de Pagamento: ${pagamento}\n` +
-        `Endereço: ${endereco}\n` +
+        `Endereco: ${endereco}\n` +
         `Valor Total: ${valor}\n` +
-        "=================\n\n";
+        "=================\n\n" +
+        "\x1B\x64\x02";       // Feed 2 lines
 
-    // Integração com RawBT
-    if (typeof rawbt !== 'undefined') {
-        rawbt.print(textoImpressao);
-    } else {
-        alert('RawBT não está disponível. Verifique se o aplicativo está instalado.');
-        console.log(textoImpressao); // Para teste
+    try {
+        if (typeof rawbt !== 'undefined') {
+            // Tenta imprimir e mostra mensagem de sucesso/erro
+            rawbt.print(textoImpressao, function(success) {
+                if (success) {
+                    alert('Pedido enviado para impressão!');
+                } else {
+                    alert('Erro ao imprimir. Verifique se a impressora está conectada.');
+                }
+            });
+        } else {
+            alert('RawBT não está disponível.\n\nVerifique se:\n1. Você está usando o navegador do RawBT\n2. A impressora está conectada no aplicativo');
+            console.log('Texto que seria impresso:', textoImpressao);
+        }
+    } catch (error) {
+        alert('Erro ao tentar imprimir: ' + error.message);
+        console.error(error);
     }
 }
