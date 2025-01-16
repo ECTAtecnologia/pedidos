@@ -22,15 +22,12 @@
         // Função para imprimir
         function printRawBT(texto) {
             try {
-                if (typeof window.print !== 'undefined') {
-                    window.print.print(texto);
-                    return true;
-                } else if (typeof print !== 'undefined') {
-                    print.print(texto);
+                if (typeof printer !== 'undefined') {
+                    printer.print(texto);
                     return true;
                 }
                 
-                alert('Não foi possível encontrar a interface de impressão.\n\nPor favor:\n1. Certifique-se de estar usando o navegador interno do RawBT\n2. Verifique se a impressora está conectada');
+                alert('Não foi possível encontrar a impressora.\n\nPor favor:\n1. Certifique-se de estar usando o navegador interno do RawBT\n2. Verifique se a impressora está conectada');
                 return false;
             } catch (e) {
                 alert('Erro ao imprimir: ' + e.message);
@@ -40,14 +37,17 @@
 
         // Função de teste simples
         function testarImpressora() {
-            const textoTeste = "\x1B\x40" +  // Initialize printer
-                              "\x1B\x61\x01" +  // Center alignment
-                              "=== TESTE DE IMPRESSAO ===\n\n" +
-                              "Funcionando!\n\n\n" +
-                              "\x1B\x64\x02";  // Feed 2 lines
-            
+            const textoTeste = 
+                "\x1B\x40" +          // Inicializa a impressora
+                "\x1B\x21\x00" +      // Fonte normal
+                "\x1B\x61\x01" +      // Centralizado
+                "=== TESTE ===\n" +
+                "IMPRESSORA\n" +
+                "BLUETOOTH\n\n" +
+                "\x1D\x56\x41\x00";   // Corta o papel
+
             if (printRawBT(textoTeste)) {
-                alert('Comando de impressão enviado!');
+                alert('Comando enviado para impressora!');
             }
         }
 
@@ -61,19 +61,19 @@
             const valor = document.getElementById('valor').value;
 
             const texto = 
-                "\x1B\x40" +  // Initialize printer
-                "\x1B\x61\x01" +  // Center alignment
+                "\x1B\x40" +          // Inicializa a impressora
+                "\x1B\x61\x01" +      // Centralizado
                 "===== PEDIDO =====\n\n" +
-                "\x1B\x61\x00" +  // Left alignment
+                "\x1B\x61\x00" +      // Alinhamento à esquerda
                 "Cliente: " + nome + "\n" +
                 "Telefone: " + telefone + "\n" +
                 "\nProdutos:\n" + produtos + "\n" +
                 "\nPagamento: " + pagamento + "\n" +
                 "Endereco: " + endereco + "\n" +
                 "Valor: " + valor + "\n" +
-                "\x1B\x61\x01" +  // Center alignment
-                "================\n\n\n" +
-                "\x1B\x64\x02";  // Feed 2 lines
+                "\x1B\x61\x01" +      // Centralizado
+                "================\n\n" +
+                "\x1D\x56\x41\x00";   // Corta o papel
 
             if (printRawBT(texto)) {
                 alert('Pedido enviado para impressão!');
