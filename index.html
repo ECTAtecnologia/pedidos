@@ -4,7 +4,61 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Sistema de Pedidos</title>
-    <link rel="stylesheet" href="style.css">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 15px;
+            max-width: 600px;
+            margin: 0 auto;
+            background-color: #f5f5f5;
+        }
+
+        h2 {
+            text-align: center;
+            color: #333;
+            margin-bottom: 15px;
+        }
+
+        .form-group {
+            margin-bottom: 10px; /* Reduzido de 15px para 10px */
+            background-color: white;
+            padding: 10px; /* Reduzido de 15px para 10px */
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        label {
+            display: block;
+            margin-bottom: 3px; /* Reduzido de 5px para 3px */
+            color: #666;
+            font-weight: bold;
+        }
+
+        input, select, textarea {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+
+        button {
+            background-color: #4CAF50;
+            color: white;
+            padding: 12px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            width: 100%;
+            font-size: 16px;
+            font-weight: bold;
+            margin-top: 10px;
+        }
+
+        button:hover {
+            background-color: #45a049;
+        }
+    </style>
     <script src="https://unpkg.com/vanilla-masker@1.1.1/lib/vanilla-masker.js"></script>
 </head>
 <body>
@@ -22,24 +76,24 @@
 
         <div class="form-group">
             <label for="produtos">Produtos:</label>
-            <textarea id="produtos" rows="4" style="width: 100%" required></textarea>
+            <textarea id="produtos" rows="4" required></textarea>
         </div>
 
         <div class="form-group">
             <label for="pagamento">Forma de Pagamento:</label>
             <select id="pagamento" required>
                 <option value="">Selecione</option>
-                <option value="dinheiro">Dinheiro</option>
-                <option value="pix">PIX</option>
-                <option value="debito">Débito</option>
-                <option value="credito">Crédito</option>
-                <option value="vr">VR</option>
+                <option value="Dinheiro">Dinheiro</option>
+                <option value="PIX">PIX</option>
+                <option value="Débito">Débito</option>
+                <option value="Crédito">Crédito</option>
+                <option value="VR">VR</option>
             </select>
         </div>
 
         <div class="form-group">
             <label for="endereco">Endereço:</label>
-            <textarea id="endereco" rows="2" style="width: 100%" required></textarea>
+            <textarea id="endereco" rows="2" required></textarea>
         </div>
 
         <div class="form-group">
@@ -50,40 +104,15 @@
         <button type="button" onclick="imprimirPedido()">Imprimir Pedido</button>
     </form>
 
-    <!-- Botão de teste -->
-    <button type="button" onclick="testarImpressora()" style="margin-top: 10px; background-color: #007bff;">
-        Testar Impressora
-    </button>
-
     <script>
-        // Função para imprimir usando iframe
-        function printViaIframe(texto) {
-            // Cria um iframe invisível
-            var iframe = document.createElement('iframe');
-            iframe.style.display = 'none';
-            document.body.appendChild(iframe);
-            
-            // Escreve o texto no iframe
-            iframe.contentWindow.document.open();
-            iframe.contentWindow.document.write('<pre>' + texto + '</pre>');
-            iframe.contentWindow.document.close();
-            
-            // Imprime
-            iframe.contentWindow.print();
-            
-            // Remove o iframe após um tempo
-            setTimeout(function() {
-                document.body.removeChild(iframe);
-            }, 1000);
+        function enviarParaImpressora(texto) {
+            var link = document.createElement('a');
+            link.href = 'rawbt://print?text=' + encodeURIComponent(texto);
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
         }
 
-        // Função de teste simples
-        function testarImpressora() {
-            var texto = "TESTE DE IMPRESSAO\n\n";
-            printViaIframe(texto);
-        }
-
-        // Função principal de impressão
         function imprimirPedido() {
             const nome = document.getElementById('nome').value;
             const telefone = document.getElementById('telefone').value;
@@ -92,17 +121,21 @@
             const endereco = document.getElementById('endereco').value;
             const valor = document.getElementById('valor').value;
 
+            // Texto formatado com caracteres de tamanho grande
             const texto = 
-                "===== PEDIDO =====\n" +
+                "\x1B\x21\x30" + // Modo expandido para título
+                "\n=== PEDIDO ===\n\n" +
+                "\x1B\x21\x20" + // Modo dupla altura
                 "Cliente: " + nome + "\n" +
-                "Telefone: " + telefone + "\n" +
-                "\nProdutos:\n" + produtos + "\n" +
-                "\nPagamento: " + pagamento + "\n" +
+                "Telefone: " + telefone + "\n\n" +
+                "PRODUTOS:\n" + produtos + "\n\n" +
+                "Pagamento: " + pagamento + "\n" +
                 "Endereco: " + endereco + "\n" +
                 "Valor: " + valor + "\n" +
-                "================\n\n";
+                "\x1B\x21\x30" + // Modo expandido para rodapé
+                "================\n\n\n\n";
 
-            printViaIframe(texto);
+            enviarParaImpressora(texto);
         }
 
         // Máscaras
