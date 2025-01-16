@@ -56,40 +56,53 @@
     </button>
 
     <script>
+        // Função para imprimir usando iframe
+        function printViaIframe(texto) {
+            // Cria um iframe invisível
+            var iframe = document.createElement('iframe');
+            iframe.style.display = 'none';
+            document.body.appendChild(iframe);
+            
+            // Escreve o texto no iframe
+            iframe.contentWindow.document.open();
+            iframe.contentWindow.document.write('<pre>' + texto + '</pre>');
+            iframe.contentWindow.document.close();
+            
+            // Imprime
+            iframe.contentWindow.print();
+            
+            // Remove o iframe após um tempo
+            setTimeout(function() {
+                document.body.removeChild(iframe);
+            }, 1000);
+        }
+
         // Função de teste simples
         function testarImpressora() {
-            try {
-                var texto = "TESTE DE IMPRESSAO\n\n";
-                window.location.href = "rawbt:print?text=" + encodeURIComponent(texto);
-            } catch (e) {
-                alert('Erro: ' + e.message);
-            }
+            var texto = "TESTE DE IMPRESSAO\n\n";
+            printViaIframe(texto);
         }
 
         // Função principal de impressão
         function imprimirPedido() {
-            try {
-                const nome = document.getElementById('nome').value;
-                const telefone = document.getElementById('telefone').value;
-                const produtos = document.getElementById('produtos').value;
-                const pagamento = document.getElementById('pagamento').value;
-                const endereco = document.getElementById('endereco').value;
-                const valor = document.getElementById('valor').value;
+            const nome = document.getElementById('nome').value;
+            const telefone = document.getElementById('telefone').value;
+            const produtos = document.getElementById('produtos').value;
+            const pagamento = document.getElementById('pagamento').value;
+            const endereco = document.getElementById('endereco').value;
+            const valor = document.getElementById('valor').value;
 
-                const texto = 
-                    "===== PEDIDO =====\n" +
-                    "Cliente: " + nome + "\n" +
-                    "Telefone: " + telefone + "\n" +
-                    "\nProdutos:\n" + produtos + "\n" +
-                    "\nPagamento: " + pagamento + "\n" +
-                    "Endereco: " + endereco + "\n" +
-                    "Valor: " + valor + "\n" +
-                    "================\n\n";
+            const texto = 
+                "===== PEDIDO =====\n" +
+                "Cliente: " + nome + "\n" +
+                "Telefone: " + telefone + "\n" +
+                "\nProdutos:\n" + produtos + "\n" +
+                "\nPagamento: " + pagamento + "\n" +
+                "Endereco: " + endereco + "\n" +
+                "Valor: " + valor + "\n" +
+                "================\n\n";
 
-                window.location.href = "rawbt:print?text=" + encodeURIComponent(texto);
-            } catch (e) {
-                alert('Erro ao imprimir: ' + e.message);
-            }
+            printViaIframe(texto);
         }
 
         // Máscaras
