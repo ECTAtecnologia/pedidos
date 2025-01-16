@@ -10,7 +10,44 @@
 <body>
     <h2>Pedido do Cliente</h2>
     <form id="pedidoForm">
-        <!-- ... resto do formulário permanece igual ... -->
+        <div class="form-group">
+            <label for="nome">Nome do Cliente:</label>
+            <input type="text" id="nome" required>
+        </div>
+
+        <div class="form-group">
+            <label for="telefone">Telefone:</label>
+            <input type="tel" id="telefone" required>
+        </div>
+
+        <div class="form-group">
+            <label for="produtos">Produtos:</label>
+            <textarea id="produtos" rows="4" style="width: 100%" required></textarea>
+        </div>
+
+        <div class="form-group">
+            <label for="pagamento">Forma de Pagamento:</label>
+            <select id="pagamento" required>
+                <option value="">Selecione</option>
+                <option value="dinheiro">Dinheiro</option>
+                <option value="pix">PIX</option>
+                <option value="debito">Débito</option>
+                <option value="credito">Crédito</option>
+                <option value="vr">VR</option>
+            </select>
+        </div>
+
+        <div class="form-group">
+            <label for="endereco">Endereço:</label>
+            <textarea id="endereco" rows="2" style="width: 100%" required></textarea>
+        </div>
+
+        <div class="form-group">
+            <label for="valor">Valor Total:</label>
+            <input type="text" id="valor" required>
+        </div>
+
+        <button type="button" onclick="imprimirPedido()">Imprimir Pedido</button>
     </form>
 
     <!-- Botão de teste -->
@@ -19,64 +56,39 @@
     </button>
 
     <script>
-        // Função para imprimir
-        function printRawBT(texto) {
-            try {
-                if (typeof printer !== 'undefined') {
-                    printer.print(texto);
-                    return true;
-                }
-                
-                alert('Não foi possível encontrar a impressora.\n\nPor favor:\n1. Certifique-se de estar usando o navegador interno do RawBT\n2. Verifique se a impressora está conectada');
-                return false;
-            } catch (e) {
-                alert('Erro ao imprimir: ' + e.message);
-                return false;
-            }
-        }
-
         // Função de teste simples
         function testarImpressora() {
-            const textoTeste = 
-                "\x1B\x40" +          // Inicializa a impressora
-                "\x1B\x21\x00" +      // Fonte normal
-                "\x1B\x61\x01" +      // Centralizado
-                "=== TESTE ===\n" +
-                "IMPRESSORA\n" +
-                "BLUETOOTH\n\n" +
-                "\x1D\x56\x41\x00";   // Corta o papel
-
-            if (printRawBT(textoTeste)) {
-                alert('Comando enviado para impressora!');
+            try {
+                var texto = "TESTE DE IMPRESSAO\n\n";
+                window.location.href = "rawbt:print?text=" + encodeURIComponent(texto);
+            } catch (e) {
+                alert('Erro: ' + e.message);
             }
         }
 
         // Função principal de impressão
         function imprimirPedido() {
-            const nome = document.getElementById('nome').value;
-            const telefone = document.getElementById('telefone').value;
-            const produtos = document.getElementById('produtos').value;
-            const pagamento = document.getElementById('pagamento').value;
-            const endereco = document.getElementById('endereco').value;
-            const valor = document.getElementById('valor').value;
+            try {
+                const nome = document.getElementById('nome').value;
+                const telefone = document.getElementById('telefone').value;
+                const produtos = document.getElementById('produtos').value;
+                const pagamento = document.getElementById('pagamento').value;
+                const endereco = document.getElementById('endereco').value;
+                const valor = document.getElementById('valor').value;
 
-            const texto = 
-                "\x1B\x40" +          // Inicializa a impressora
-                "\x1B\x61\x01" +      // Centralizado
-                "===== PEDIDO =====\n\n" +
-                "\x1B\x61\x00" +      // Alinhamento à esquerda
-                "Cliente: " + nome + "\n" +
-                "Telefone: " + telefone + "\n" +
-                "\nProdutos:\n" + produtos + "\n" +
-                "\nPagamento: " + pagamento + "\n" +
-                "Endereco: " + endereco + "\n" +
-                "Valor: " + valor + "\n" +
-                "\x1B\x61\x01" +      // Centralizado
-                "================\n\n" +
-                "\x1D\x56\x41\x00";   // Corta o papel
+                const texto = 
+                    "===== PEDIDO =====\n" +
+                    "Cliente: " + nome + "\n" +
+                    "Telefone: " + telefone + "\n" +
+                    "\nProdutos:\n" + produtos + "\n" +
+                    "\nPagamento: " + pagamento + "\n" +
+                    "Endereco: " + endereco + "\n" +
+                    "Valor: " + valor + "\n" +
+                    "================\n\n";
 
-            if (printRawBT(texto)) {
-                alert('Pedido enviado para impressão!');
+                window.location.href = "rawbt:print?text=" + encodeURIComponent(texto);
+            } catch (e) {
+                alert('Erro ao imprimir: ' + e.message);
             }
         }
 
