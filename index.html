@@ -19,18 +19,35 @@
     </button>
 
     <script>
-        // Função para imprimir usando o objeto Android
+        // Função para imprimir usando diferentes interfaces do RawBT
         function printRawBT(texto) {
-            if (window.Android) {
-                window.Android.printText(texto);
-                return true;
+            try {
+                // Tenta diferentes métodos de impressão
+                if (typeof RawBT !== 'undefined') {
+                    RawBT.print(texto);
+                    return true;
+                } else if (typeof window.RawBT !== 'undefined') {
+                    window.RawBT.print(texto);
+                    return true;
+                } else if (typeof window.Android !== 'undefined') {
+                    window.Android.printText(texto);
+                    return true;
+                } else if (typeof Android !== 'undefined') {
+                    Android.printText(texto);
+                    return true;
+                }
+                
+                alert('Interface de impressão não encontrada.\n\nPor favor, verifique:\n1. Se você está usando o app RawBT\n2. Se a impressora está conectada no app');
+                return false;
+            } catch (e) {
+                alert('Erro ao imprimir: ' + e.message);
+                return false;
             }
-            alert('Erro: Certifique-se de estar usando o navegador do RawBT');
-            return false;
         }
 
         // Função de teste simples
         function testarImpressora() {
+            console.log('Tentando imprimir teste...');
             const textoTeste = "=== TESTE DE IMPRESSAO ===\n\nFuncionando!\n\n\n";
             if (printRawBT(textoTeste)) {
                 alert('Comando de impressão enviado!');
@@ -73,6 +90,12 @@
                 delimiter: '.',
                 unit: 'R$ '
             });
+
+            // Verifica interfaces disponíveis
+            console.log('RawBT disponível:', typeof RawBT !== 'undefined');
+            console.log('window.RawBT disponível:', typeof window.RawBT !== 'undefined');
+            console.log('Android disponível:', typeof Android !== 'undefined');
+            console.log('window.Android disponível:', typeof window.Android !== 'undefined');
         }
     </script>
 </body>
