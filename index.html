@@ -88,23 +88,12 @@
                 "=================\n\n";
 
             try {
-                // Cria um arquivo Blob com o texto
-                const blob = new Blob([textoImpressao], { type: 'text/plain' });
-                
-                // Cria uma URL temporária para o arquivo
-                const fileUrl = URL.createObjectURL(blob);
-
-                // Cria o link para o RawBT usando a URL do arquivo
-                const printLink = document.createElement('a');
-                printLink.href = 'rawbt://print?file=' + encodeURIComponent(fileUrl);
-                document.body.appendChild(printLink);
-                printLink.click();
-                document.body.removeChild(printLink);
-
-                // Limpa a URL temporária após um breve delay
-                setTimeout(() => {
-                    URL.revokeObjectURL(fileUrl);
-                }, 1000);
+                // Cria um link com o protocolo rawbt
+                var link = document.createElement('a');
+                link.href = 'rawbt://print?text=' + encodeURIComponent(textoImpressao);
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
 
                 // Limpa todos os campos
                 document.getElementById('nome').value = '';
