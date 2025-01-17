@@ -8,14 +8,55 @@
     <script src="https://unpkg.com/vanilla-masker@1.1.1/lib/vanilla-masker.js"></script>
 </head>
 <body>
-    <!-- ... resto do HTML permanece igual ... -->
+    <h2>Pedido do Cliente</h2>
+    <form id="pedidoForm">
+        <div class="form-group">
+            <label for="nome">Nome do Cliente:</label>
+            <input type="text" id="nome" required>
+        </div>
+
+        <div class="form-group">
+            <label for="telefone">Telefone:</label>
+            <input type="tel" id="telefone" required>
+        </div>
+
+        <div class="form-group">
+            <label for="produtos">Produtos:</label>
+            <textarea id="produtos" rows="4" style="width: 100%" required></textarea>
+        </div>
+
+        <div class="form-group">
+            <label for="pagamento">Forma de Pagamento:</label>
+            <select id="pagamento" required>
+                <option value="">Selecione</option>
+                <option value="dinheiro">Dinheiro</option>
+                <option value="pix">PIX</option>
+                <option value="debito">Débito</option>
+                <option value="credito">Crédito</option>
+                <option value="vr">VR</option>
+            </select>
+        </div>
+
+        <div class="form-group">
+            <label for="endereco">Endereço:</label>
+            <textarea id="endereco" rows="2" style="width: 100%" required></textarea>
+        </div>
+
+        <div class="form-group">
+            <label for="valor">Valor Total:</label>
+            <input type="text" id="valor" required>
+        </div>
+
+        <button type="button" onclick="imprimirPedido()">Imprimir Pedido</button>
+    </form>
 
     <script>
         window.onload = function() {
-            // Máscaras permanecem iguais
+            // Máscara para telefone
             var telefoneInput = document.getElementById('telefone');
             VMasker(telefoneInput).maskPattern('(99) 99999-9999');
 
+            // Máscara para valor em reais
             var valorInput = document.getElementById('valor');
             VMasker(valorInput).maskMoney({
                 precision: 2,
@@ -52,14 +93,6 @@
                 
                 // Cria uma URL temporária para o arquivo
                 const fileUrl = URL.createObjectURL(blob);
-
-                // Cria um link para download (opcional, para debug)
-                const downloadLink = document.createElement('a');
-                downloadLink.href = fileUrl;
-                downloadLink.download = 'pedido.txt';
-                
-                // Salva o arquivo (opcional, para debug)
-                // downloadLink.click();
 
                 // Cria o link para o RawBT usando a URL do arquivo
                 const printLink = document.createElement('a');
