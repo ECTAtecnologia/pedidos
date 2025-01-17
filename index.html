@@ -87,23 +87,27 @@
                 `Valor Total: ${valor}\n` +
                 "=================\n\n";
 
-            // Cria um link com o protocolo rawbt
-            var link = document.createElement('a');
-            link.href = 'rawbt://print?text=' + encodeURIComponent(textoImpressao);
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
+            try {
+                // Tenta usar o protocolo rawbt diretamente
+                window.location.href = 'rawbt:print?text=' + encodeURIComponent(textoImpressao);
 
-            // Limpa todos os campos
-            document.getElementById('nome').value = '';
-            document.getElementById('telefone').value = '';
-            document.getElementById('produtos').value = '';
-            document.getElementById('pagamento').value = '';
-            document.getElementById('endereco').value = '';
-            document.getElementById('valor').value = '';
+                // Aguarda um momento antes de limpar os campos
+                setTimeout(() => {
+                    // Limpa todos os campos
+                    document.getElementById('nome').value = '';
+                    document.getElementById('telefone').value = '';
+                    document.getElementById('produtos').value = '';
+                    document.getElementById('pagamento').value = '';
+                    document.getElementById('endereco').value = '';
+                    document.getElementById('valor').value = '';
 
-            // Foca no primeiro campo para novo pedido
-            document.getElementById('nome').focus();
+                    // Foca no primeiro campo para novo pedido
+                    document.getElementById('nome').focus();
+                }, 500);
+            } catch (error) {
+                alert('Erro ao imprimir. Por favor, verifique se a impressora está conectada.');
+                console.error(error);
+            }
         }
     </script>
 </body>
