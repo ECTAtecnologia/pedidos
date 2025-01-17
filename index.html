@@ -6,6 +6,8 @@
     <title>Sistema de Pedidos</title>
     <link rel="stylesheet" href="style.css">
     <script src="https://unpkg.com/vanilla-masker@1.1.1/lib/vanilla-masker.js"></script>
+    <!-- Adiciona a permissão -->
+    <meta name="android-permission" content="android.permission.READ_EXTERNAL_STORAGE" />
 </head>
 <body>
     <h2>Pedido do Cliente</h2>
@@ -50,9 +52,6 @@
         <button type="button" onclick="imprimirPedido()">Imprimir Pedido</button>
     </form>
 
-    <!-- Iframe oculto para impressão -->
-    <iframe id="printFrame" style="display: none;"></iframe>
-
     <script>
         window.onload = function() {
             // Máscara para telefone
@@ -67,6 +66,11 @@
                 delimiter: '.',
                 unit: 'R$ '
             });
+
+            // Solicita permissão ao carregar
+            if (typeof Android !== 'undefined' && Android.requestPermission) {
+                Android.requestPermission('android.permission.READ_EXTERNAL_STORAGE');
+            }
         }
 
         function imprimirPedido() {
@@ -91,40 +95,28 @@
                 "=================\n\n";
 
             try {
-                // Cria um formulário temporário
-                const form = document.createElement('form');
-                form.method = 'POST';
-                form.action = 'rawbt:print';
+                // Tenta usar a interface Android se disponível
+                if (typeof Android !== 'undefined' && Android.print) {
+                    Android.print(textoImpressao);
+                } else {
+                    // Fallback para o método anterior
+                    var link = document.createElement('a');
+                    link.href = 'rawbt://print?text=' + encodeURIComponent(textoImpressao);
+                    document.body.appendChild(link);
+                    link.click();
+                    document.body.removeChild(link);
+                }
 
-                // Adiciona o texto como campo oculto
-                const input = document.createElement('input');
-                input.type = 'hidden';
-                input.name = 'text';
-                input.value = textoImpressao;
-                form.appendChild(input);
+                // Limpa todos os campos
+                document.getElementById('nome').value = '';
+                document.getElementById('telefone').value = '';
+                document.getElementById('produtos').value = '';
+                document.getElementById('pagamento').value = '';
+                document.getElementById('endereco').value = '';
+                document.getElementById('valor').value = '';
 
-                // Adiciona o formulário ao documento
-                document.body.appendChild(form);
-
-                // Envia o formulário
-                form.submit();
-
-                // Remove o formulário
-                document.body.removeChild(form);
-
-                // Limpa os campos após um breve delay
-                setTimeout(() => {
-                    document.getElementById('nome').value = '';
-                    document.getElementById('telefone').value = '';
-                    document.getElementById('produtos').value = '';
-                    document.getElementById('pagamento').value = '';
-                    document.getElementById('endereco').value = '';
-                    document.getElementById('valor').value = '';
-
-                    // Foca no primeiro campo para novo pedido
-                    document.getElementById('nome').focus();
-                }, 500);
-
+                // Foca no primeiro campo para novo pedido
+                document.getElementById('nome').focus();
             } catch (error) {
                 alert('Erro ao imprimir. Por favor, verifique se a impressora está conectada.');
                 console.error(error);
