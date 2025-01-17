@@ -50,6 +50,9 @@
         <button type="button" onclick="imprimirPedido()">Imprimir Pedido</button>
     </form>
 
+    <!-- Iframe oculto para impressão -->
+    <iframe id="printFrame" style="display: none;"></iframe>
+
     <script>
         window.onload = function() {
             // Máscara para telefone
@@ -88,27 +91,39 @@
                 "=================\n\n";
 
             try {
-                // Primeira tentativa de impressão
-                window.location.href = 'rawbt:print?text=' + encodeURIComponent(textoImpressao);
+                // Cria um formulário temporário
+                const form = document.createElement('form');
+                form.method = 'POST';
+                form.action = 'rawbt:print';
 
-                // Segunda tentativa após 3 segundos
+                // Adiciona o texto como campo oculto
+                const input = document.createElement('input');
+                input.type = 'hidden';
+                input.name = 'text';
+                input.value = textoImpressao;
+                form.appendChild(input);
+
+                // Adiciona o formulário ao documento
+                document.body.appendChild(form);
+
+                // Envia o formulário
+                form.submit();
+
+                // Remove o formulário
+                document.body.removeChild(form);
+
+                // Limpa os campos após um breve delay
                 setTimeout(() => {
-                    window.location.href = 'rawbt:print?text=' + encodeURIComponent(textoImpressao);
-                    
-                    // Limpa os campos após a segunda tentativa
-                    setTimeout(() => {
-                        // Limpa todos os campos
-                        document.getElementById('nome').value = '';
-                        document.getElementById('telefone').value = '';
-                        document.getElementById('produtos').value = '';
-                        document.getElementById('pagamento').value = '';
-                        document.getElementById('endereco').value = '';
-                        document.getElementById('valor').value = '';
+                    document.getElementById('nome').value = '';
+                    document.getElementById('telefone').value = '';
+                    document.getElementById('produtos').value = '';
+                    document.getElementById('pagamento').value = '';
+                    document.getElementById('endereco').value = '';
+                    document.getElementById('valor').value = '';
 
-                        // Foca no primeiro campo para novo pedido
-                        document.getElementById('nome').focus();
-                    }, 500);
-                }, 3000);
+                    // Foca no primeiro campo para novo pedido
+                    document.getElementById('nome').focus();
+                }, 500);
 
             } catch (error) {
                 alert('Erro ao imprimir. Por favor, verifique se a impressora está conectada.');
