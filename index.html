@@ -1,66 +1,99 @@
-<style>
-    body {
-        font-family: Arial, sans-serif;
-        padding: 15px;
-        max-width: 600px;
-        margin: 0 auto;
-        background-color: #f5f5f5;
-    }
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sistema de Pedidos</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="https://unpkg.com/vanilla-masker@1.1.1/lib/vanilla-masker.js"></script>
+</head>
+<body>
+    <h2>Pedido do Cliente</h2>
+    <form id="pedidoForm">
+        <div class="form-group">
+            <label for="nome">Nome do Cliente:</label>
+            <input type="text" id="nome" required>
+        </div>
 
-    h2 {
-        text-align: center;
-        color: #333;
-        margin-bottom: 15px;
-        font-size: 18px; /* Reduzido do padrão */
-    }
+        <div class="form-group">
+            <label for="telefone">Telefone:</label>
+            <input type="tel" id="telefone" required>
+        </div>
 
-    .form-group {
-        margin-bottom: 8px; /* Reduzido mais ainda */
-        background-color: white;
-        padding: 8px; /* Reduzido mais ainda */
-        border-radius: 8px;
-        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-    }
+        <div class="form-group">
+            <label for="produtos">Produtos:</label>
+            <textarea id="produtos" rows="4" style="width: 100%" required></textarea>
+        </div>
 
-    label {
-        display: block;
-        margin-bottom: 2px; /* Reduzido */
-        color: #666;
-        font-weight: bold;
-        font-size: 12px; /* Reduzido para 12px */
-    }
+        <div class="form-group">
+            <label for="pagamento">Forma de Pagamento:</label>
+            <select id="pagamento" required>
+                <option value="">Selecione</option>
+                <option value="dinheiro">Dinheiro</option>
+                <option value="pix">PIX</option>
+                <option value="debito">Débito</option>
+                <option value="credito">Crédito</option>
+                <option value="vr">VR</option>
+            </select>
+        </div>
 
-    input, select, textarea {
-        width: 100%;
-        padding: 6px; /* Reduzido */
-        border: 1px solid #ddd;
-        border-radius: 4px;
-        box-sizing: border-box;
-        font-size: 14px; /* Tamanho da fonte do input */
-    }
+        <div class="form-group">
+            <label for="endereco">Endereço:</label>
+            <textarea id="endereco" rows="2" style="width: 100%" required></textarea>
+        </div>
 
-    button {
-        background-color: #4CAF50;
-        color: white;
-        padding: 10px 20px;
-        border: none;
-        border-radius: 4px;
-        cursor: pointer;
-        width: 100%;
-        font-size: 16px;
-        font-weight: bold;
-        margin-top: 8px;
-    }
+        <div class="form-group">
+            <label for="valor">Valor Total:</label>
+            <input type="text" id="valor" required>
+        </div>
 
-    button:hover {
-        background-color: #45a049;
-    }
+        <button type="button" onclick="imprimirPedido()">Imprimir Pedido</button>
+    </form>
 
-    /* Ajuste específico para campos de texto */
-    input[type="text"],
-    input[type="tel"],
-    select,
-    textarea {
-        margin-top: 2px;
-    }
-</style>
+    <script>
+        window.onload = function() {
+            // Máscara para telefone
+            var telefoneInput = document.getElementById('telefone');
+            VMasker(telefoneInput).maskPattern('(99) 99999-9999');
+
+            // Máscara para valor em reais
+            var valorInput = document.getElementById('valor');
+            VMasker(valorInput).maskMoney({
+                precision: 2,
+                separator: ',',
+                delimiter: '.',
+                unit: 'R$ '
+            });
+        }
+
+        function imprimirPedido() {
+            // Coleta os dados do formulário
+            const nome = document.getElementById('nome').value;
+            const telefone = document.getElementById('telefone').value;
+            const produtos = document.getElementById('produtos').value;
+            const pagamento = document.getElementById('pagamento').value;
+            const endereco = document.getElementById('endereco').value;
+            const valor = document.getElementById('valor').value;
+
+            // Formata o texto para impressão
+            const textoImpressao = 
+                "PEDIDO\n" +
+                "=================\n" +
+                `Cliente: ${nome}\n` +
+                `Telefone: ${telefone}\n` +
+                `\nProdutos:\n${produtos}\n` +
+                `\nForma de Pagamento: ${pagamento}\n` +
+                `Endereço: ${endereco}\n` +
+                `Valor Total: ${valor}\n` +
+                "=================\n\n";
+
+            // Cria um link com o protocolo rawbt
+            var link = document.createElement('a');
+            link.href = 'rawbt://print?text=' + encodeURIComponent(textoImpressao);
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
+    </script>
+</body>
+</html>
