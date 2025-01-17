@@ -1,6 +1,6 @@
 body {
     font-family: Arial, sans-serif;
-    padding: 15px;
+    padding: 10px; /* Reduzido de 15px */
     max-width: 600px;
     margin: 0 auto;
     background-color: #f5f5f5;
@@ -9,14 +9,15 @@ body {
 h2 {
     text-align: center;
     color: #333;
-    margin-bottom: 15px;
+    margin-bottom: 10px; /* Reduzido de 15px */
+    margin-top: 5px; /* Adicionado para reduzir espaço no topo */
     font-size: 18px;
 }
 
 .form-group {
-    margin-bottom: 8px;
+    margin-bottom: 5px; /* Reduzido de 8px */
     background-color: white;
-    padding: 8px;
+    padding: 6px; /* Reduzido de 8px */
     border-radius: 8px;
     box-shadow: 0 2px 4px rgba(0,0,0,0.1);
 }
@@ -31,7 +32,7 @@ label {
 
 input, select, textarea {
     width: 100%;
-    padding: 6px;
+    padding: 4px; /* Reduzido de 6px */
     border: 1px solid #ddd;
     border-radius: 4px;
     box-sizing: border-box;
@@ -41,16 +42,27 @@ input, select, textarea {
 button {
     background-color: #4CAF50;
     color: white;
-    padding: 10px 20px;
+    padding: 8px 20px; /* Reduzido de 10px */
     border: none;
     border-radius: 4px;
     cursor: pointer;
     width: 100%;
     font-size: 16px;
     font-weight: bold;
-    margin-top: 8px;
+    margin-top: 6px; /* Reduzido de 8px */
 }
 
 button:hover {
     background-color: #45a049;
+}
+
+/* Ajuste específico para campos de texto */
+textarea {
+    padding: 4px;
+    min-height: 30px; /* Ajuste a altura mínima conforme necessário */
+}
+
+/* Ajuste para o campo de produtos que precisa ser maior */
+#produtos {
+    min-height: 60px;
 }
