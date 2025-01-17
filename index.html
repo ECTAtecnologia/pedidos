@@ -88,9 +88,9 @@
                 "=================\n\n";
 
             try {
-                // Cria um link com o protocolo rawbt e parâmetros adicionais
+                // Cria um link com o protocolo rawbt
                 var link = document.createElement('a');
-                link.href = 'rawbt://print?text=' + encodeURIComponent(textoImpressao) + '&silent=true&return=true';
+                link.href = 'rawbt://print?text=' + encodeURIComponent(textoImpressao);
                 document.body.appendChild(link);
                 link.click();
                 document.body.removeChild(link);
