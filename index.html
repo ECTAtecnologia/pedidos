@@ -88,22 +88,28 @@
                 "=================\n\n";
 
             try {
-                // Tenta usar o protocolo rawbt diretamente
+                // Primeira tentativa de impressão
                 window.location.href = 'rawbt:print?text=' + encodeURIComponent(textoImpressao);
 
-                // Aguarda um momento antes de limpar os campos
+                // Segunda tentativa após 3 segundos
                 setTimeout(() => {
-                    // Limpa todos os campos
-                    document.getElementById('nome').value = '';
-                    document.getElementById('telefone').value = '';
-                    document.getElementById('produtos').value = '';
-                    document.getElementById('pagamento').value = '';
-                    document.getElementById('endereco').value = '';
-                    document.getElementById('valor').value = '';
+                    window.location.href = 'rawbt:print?text=' + encodeURIComponent(textoImpressao);
+                    
+                    // Limpa os campos após a segunda tentativa
+                    setTimeout(() => {
+                        // Limpa todos os campos
+                        document.getElementById('nome').value = '';
+                        document.getElementById('telefone').value = '';
+                        document.getElementById('produtos').value = '';
+                        document.getElementById('pagamento').value = '';
+                        document.getElementById('endereco').value = '';
+                        document.getElementById('valor').value = '';
 
-                    // Foca no primeiro campo para novo pedido
-                    document.getElementById('nome').focus();
-                }, 500);
+                        // Foca no primeiro campo para novo pedido
+                        document.getElementById('nome').focus();
+                    }, 500);
+                }, 3000);
+
             } catch (error) {
                 alert('Erro ao imprimir. Por favor, verifique se a impressora está conectada.');
                 console.error(error);
