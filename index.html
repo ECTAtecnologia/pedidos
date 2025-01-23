@@ -130,31 +130,28 @@
 
             try {
                 if (typeof rawbt !== 'undefined') {
-                    // Tenta imprimir e mostra mensagem de sucesso/erro
+                    // Primeiro tenta imprimir
                     rawbt.print(textoImpressao, function(success) {
                         if (success) {
-                            // Envia email de notificação
-                            emailjs.send(
-                                "service_2frhpqp",
-                                "template_nijfbcw",
-                                {
-                                    pedido_numero: numeroPedidoAtual,
-                                    data_hora: dataHora,
-                                    nome_cliente: nome,
-                                    telefone: telefone,
-                                    produtos: produtos,
-                                    valor_total: valor,
-                                    forma_pagamento: pagamento,
-                                    endereco: endereco
-                                }
-                            ).then(
-                                function(response) {
-                                    console.log("Email enviado", response);
-                                },
-                                function(error) {
-                                    console.log("Erro ao enviar email", error);
-                                }
-                            );
+                            // Só tenta enviar o email depois que a impressão for bem sucedida
+                            try {
+                                emailjs.send(
+                                    "service_2frhpqp",
+                                    "template_nijfbcw",
+                                    {
+                                        pedido_numero: numeroPedidoAtual,
+                                        data_hora: dataHora,
+                                        nome_cliente: nome,
+                                        telefone: telefone,
+                                        produtos: produtos,
+                                        valor_total: valor,
+                                        forma_pagamento: pagamento,
+                                        endereco: endereco
+                                    }
+                                );
+                            } catch (emailError) {
+                                console.log("Erro ao enviar email", emailError);
+                            }
 
                             // Limpa os campos após impressão bem-sucedida
                             document.getElementById('nome').value = '';
