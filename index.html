@@ -9,7 +9,7 @@
 </head>
 <body>
     <h2>Pedido do Cliente</h2>
-    <div id="numeroPedido" style="text-align: center; font-size: 1.2em; margin-bottom: 15px;"></div>
+    <div id="numeroPedido"></div>
     
     <form id="pedidoForm">
         <div class="form-group">
@@ -25,11 +25,6 @@
         <div class="form-group">
             <label for="produtos">Produtos:</label>
             <textarea id="produtos" rows="4" style="width: 100%" required></textarea>
-        </div>
-
-        <div class="form-group">
-            <label for="observacoes">Observações:</label>
-            <textarea id="observacoes" rows="2" style="width: 100%"></textarea>
         </div>
 
         <div class="form-group">
@@ -77,6 +72,14 @@
                 delimiter: '.',
                 unit: 'R$ '
             });
+
+            // Ajuste para garantir valor numérico correto ao imprimir
+            valorInput.addEventListener('change', function(e) {
+                let valor = e.target.value.replace('R$ ', '')
+                    .replace('.', '')
+                    .replace(',', '.');
+                e.target.dataset.valor = valor;
+            });
         }
 
         function atualizarNumeroPedido() {
@@ -95,51 +98,62 @@
             const nome = document.getElementById('nome').value;
             const telefone = document.getElementById('telefone').value;
             const produtos = document.getElementById('produtos').value;
-            const observacoes = document.getElementById('observacoes').value;
             const pagamento = document.getElementById('pagamento').value;
             const endereco = document.getElementById('endereco').value;
             const valor = document.getElementById('valor').value;
             const dataHora = formatarDataHora();
 
-            // Formata o texto para impressão
+            // Formata o texto para impressão com comandos ESC/POS
             const textoImpressao = 
-                "PEDIDO\n" +
+                "\x1B\x40" +          // Inicializa a impressora
+                "\x1B\x61\x01" +      // Alinhamento centralizado
+                "\x1B\x21\x30" +      // Fonte dupla altura e largura
+                "PEDIDO Nº " + numeroPedidoAtual + "\n" +
+                "\x1B\x21\x00" +      // Fonte normal
                 "=================\n" +
-                `Nº ${numeroPedidoAtual}\n` +
                 `Data/Hora: ${dataHora}\n` +
                 `Cliente: ${nome}\n` +
                 `Telefone: ${telefone}\n` +
-                `\nProdutos:\n${produtos}\n` +
-                (observacoes ? `\nObservações:\n${observacoes}\n` : '') +
+                "\x1B\x61\x00" +      // Alinhamento à esquerda
+                `\nPRODUTOS:\n${produtos}\n` +
                 `\nForma de Pagamento: ${pagamento}\n` +
-                `Endereço: ${endereco}\n` +
+                `Endereco: ${endereco}\n` +
+                "\x1B\x61\x02" +      // Alinhamento à direita
                 `Valor Total: ${valor}\n` +
-                "=================\n\n";
+                "\x1B\x61\x01" +      // Alinhamento centralizado
+                "=================\n\n" +
+                "\x1B\x64\x03";       // Avança 3 linhas
 
             try {
-                // Cria um link com o protocolo rawbt
-                var link = document.createElement('a');
-                link.href = 'rawbt://print?text=' + encodeURIComponent(textoImpressao);
-                document.body.appendChild(link);
-                link.click();
-                document.body.removeChild(link);
+                if (typeof rawbt !== 'undefined') {
+                    // Tenta imprimir e mostra mensagem de sucesso/erro
+                    rawbt.print(textoImpressao, function(success) {
+                        if (success) {
+                            // Limpa os campos após impressão bem-sucedida
+                            document.getElementById('nome').value = '';
+                            document.getElementById('telefone').value = '';
+                            document.getElementById('produtos').value = '';
+                            document.getElementById('pagamento').value = '';
+                            document.getElementById('endereco').value = '';
+                            document.getElementById('valor').value = '';
 
-                // Limpa todos os campos
-                document.getElementById('nome').value = '';
-                document.getElementById('telefone').value = '';
-                document.getElementById('produtos').value = '';
-                document.getElementById('observacoes').value = '';
-                document.getElementById('pagamento').value = '';
-                document.getElementById('endereco').value = '';
-                document.getElementById('valor').value = '';
+                            // Atualiza o número do próximo pedido
+                            atualizarNumeroPedido();
 
-                // Atualiza o número do próximo pedido
-                atualizarNumeroPedido();
+                            // Foca no primeiro campo para novo pedido
+                            document.getElementById('nome').focus();
 
-                // Foca no primeiro campo para novo pedido
-                document.getElementById('nome').focus();
+                            alert('Pedido enviado para impressão!');
+                        } else {
+                            alert('Erro ao imprimir. Verifique se a impressora está conectada.');
+                        }
+                    });
+                } else {
+                    alert('RawBT não está disponível.\n\nVerifique se:\n1. Você está usando o navegador do RawBT\n2. A impressora está conectada no aplicativo');
+                    console.log('Texto que seria impresso:', textoImpressao);
+                }
             } catch (error) {
-                alert('Erro ao imprimir. Por favor, verifique se a impressora está conectada.');
+                alert('Erro ao tentar imprimir: ' + error.message);
                 console.error(error);
             }
         }
