@@ -58,7 +58,7 @@
 
         window.onload = function() {
             // Inicializa EmailJS
-            emailjs.init("SUA_PUBLIC_KEY");
+            emailjs.init("yBK-sZTSf2ez5JgMu");
 
             // Recupera o último número de pedido ou inicia do 1
             numeroPedidoAtual = parseInt(localStorage.getItem('ultimoNumeroPedido') || '0');
@@ -135,8 +135,8 @@
                         if (success) {
                             // Envia email de notificação
                             emailjs.send(
-                                "SEU_SERVICE_ID",
-                                "SEU_TEMPLATE_ID",
+                                "service_2frhpqp",
+                                "template_nijfbcw",
                                 {
                                     pedido_numero: numeroPedidoAtual,
                                     data_hora: dataHora,
