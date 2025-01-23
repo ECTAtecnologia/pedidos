@@ -57,10 +57,8 @@
         let numeroPedidoAtual = 0;
 
         window.onload = function() {
-            // Inicializa EmailJS com logs
-            console.log("Inicializando EmailJS...");
+            // Inicializa EmailJS
             emailjs.init("yBK-sZTSf2ez5JgMu");
-            console.log("EmailJS inicializado");
 
             // Recupera o último número de pedido ou inicia do 1
             numeroPedidoAtual = parseInt(localStorage.getItem('ultimoNumeroPedido') || '0');
@@ -100,8 +98,6 @@
         }
 
         function imprimirPedido() {
-            console.log("Função imprimirPedido iniciada");
-            
             // Coleta os dados do formulário
             const nome = document.getElementById('nome').value;
             const telefone = document.getElementById('telefone').value;
@@ -110,11 +106,6 @@
             const endereco = document.getElementById('endereco').value;
             const valor = document.getElementById('valor').value;
             const dataHora = formatarDataHora();
-
-            // Log dos dados coletados
-            console.log("Dados coletados:", {
-                nome, telefone, produtos, pagamento, endereco, valor, dataHora
-            });
 
             // Formata o texto para impressão
             const textoImpressao = 
@@ -138,17 +129,11 @@
                 "\x1B\x64\x03";       // Avança 3 linhas
 
             try {
-                console.log("Tentando imprimir...");
                 // Cria um link com o protocolo rawbt
                 var link = document.createElement('a');
                 link.href = 'rawbt://print?text=' + encodeURIComponent(textoImpressao);
-                document.body.appendChild(link);
-                link.click();
-                document.body.removeChild(link);
-                console.log("Impressão realizada");
-
-                // Envia email após a impressão
-                console.log("Tentando enviar email...");
+                
+                // Envia o email antes da impressão
                 emailjs.send(
                     "service_2frhpqp",
                     "template_nijfbcw",
@@ -163,33 +148,36 @@
                         endereco: endereco
                     }
                 ).then(
-                    function(response) {
-                        console.log("Email enviado com sucesso!", response);
+                    function() {
+                        // Após enviar o email, faz a impressão
+                        document.body.appendChild(link);
+                        link.click();
+                        document.body.removeChild(link);
+
+                        // Limpa os campos após impressão
+                        document.getElementById('nome').value = '';
+                        document.getElementById('telefone').value = '';
+                        document.getElementById('produtos').value = '';
+                        document.getElementById('pagamento').value = '';
+                        document.getElementById('endereco').value = '';
+                        document.getElementById('valor').value = '';
+
+                        // Atualiza o número do próximo pedido
+                        atualizarNumeroPedido();
+                        document.getElementById('nome').focus();
                     },
                     function(error) {
                         console.log("Erro ao enviar email:", error);
+                        // Mesmo com erro no email, continua com a impressão
+                        document.body.appendChild(link);
+                        link.click();
+                        document.body.removeChild(link);
                     }
                 );
 
-                // Limpa os campos após impressão
-                document.getElementById('nome').value = '';
-                document.getElementById('telefone').value = '';
-                document.getElementById('produtos').value = '';
-                document.getElementById('pagamento').value = '';
-                document.getElementById('endereco').value = '';
-                document.getElementById('valor').value = '';
-
-                // Atualiza o número do próximo pedido
-                atualizarNumeroPedido();
-
-                // Foca no primeiro campo para novo pedido
-                document.getElementById('nome').focus();
-
-                console.log("Processo finalizado com sucesso");
-
             } catch (error) {
-                console.error("Erro durante o processo:", error);
                 alert('Erro ao tentar imprimir: ' + error.message);
+                console.error(error);
             }
         }
     </script>
