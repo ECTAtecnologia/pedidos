@@ -107,7 +107,7 @@
             const valor = document.getElementById('valor').value;
             const dataHora = formatarDataHora();
 
-            // Formata o texto para impressão com comandos ESC/POS
+            // Formata o texto para impressão
             const textoImpressao = 
                 "\x1B\x40" +          // Inicializa a impressora
                 "\x1B\x61\x01" +      // Alinhamento centralizado
@@ -129,53 +129,47 @@
                 "\x1B\x64\x03";       // Avança 3 linhas
 
             try {
-                if (typeof rawbt !== 'undefined') {
-                    // Primeiro tenta imprimir
-                    rawbt.print(textoImpressao, function(success) {
-                        if (success) {
-                            // Só tenta enviar o email depois que a impressão for bem sucedida
-                            try {
-                                emailjs.send(
-                                    "service_2frhpqp",
-                                    "template_nijfbcw",
-                                    {
-                                        pedido_numero: numeroPedidoAtual,
-                                        data_hora: dataHora,
-                                        nome_cliente: nome,
-                                        telefone: telefone,
-                                        produtos: produtos,
-                                        valor_total: valor,
-                                        forma_pagamento: pagamento,
-                                        endereco: endereco
-                                    }
-                                );
-                            } catch (emailError) {
-                                console.log("Erro ao enviar email", emailError);
-                            }
+                // Cria um link com o protocolo rawbt
+                var link = document.createElement('a');
+                link.href = 'rawbt://print?text=' + encodeURIComponent(textoImpressao);
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
 
-                            // Limpa os campos após impressão bem-sucedida
-                            document.getElementById('nome').value = '';
-                            document.getElementById('telefone').value = '';
-                            document.getElementById('produtos').value = '';
-                            document.getElementById('pagamento').value = '';
-                            document.getElementById('endereco').value = '';
-                            document.getElementById('valor').value = '';
-
-                            // Atualiza o número do próximo pedido
-                            atualizarNumeroPedido();
-
-                            // Foca no primeiro campo para novo pedido
-                            document.getElementById('nome').focus();
-
-                            alert('Pedido enviado para impressão!');
-                        } else {
-                            alert('Erro ao imprimir. Verifique se a impressora está conectada.');
+                // Envia email após a impressão
+                try {
+                    emailjs.send(
+                        "service_2frhpqp",
+                        "template_nijfbcw",
+                        {
+                            pedido_numero: numeroPedidoAtual,
+                            data_hora: dataHora,
+                            nome_cliente: nome,
+                            telefone: telefone,
+                            produtos: produtos,
+                            valor_total: valor,
+                            forma_pagamento: pagamento,
+                            endereco: endereco
                         }
-                    });
-                } else {
-                    alert('RawBT não está disponível.\n\nVerifique se:\n1. Você está usando o navegador do RawBT\n2. A impressora está conectada no aplicativo');
-                    console.log('Texto que seria impresso:', textoImpressao);
+                    );
+                } catch (emailError) {
+                    console.log("Erro ao enviar email", emailError);
                 }
+
+                // Limpa os campos após impressão
+                document.getElementById('nome').value = '';
+                document.getElementById('telefone').value = '';
+                document.getElementById('produtos').value = '';
+                document.getElementById('pagamento').value = '';
+                document.getElementById('endereco').value = '';
+                document.getElementById('valor').value = '';
+
+                // Atualiza o número do próximo pedido
+                atualizarNumeroPedido();
+
+                // Foca no primeiro campo para novo pedido
+                document.getElementById('nome').focus();
+
             } catch (error) {
                 alert('Erro ao tentar imprimir: ' + error.message);
                 console.error(error);
