@@ -9,6 +9,8 @@
 </head>
 <body>
     <h2>Pedido do Cliente</h2>
+    <div id="numeroPedido" style="text-align: center; font-size: 1.2em; margin-bottom: 15px;"></div>
+    
     <form id="pedidoForm">
         <div class="form-group">
             <label for="nome">Nome do Cliente:</label>
@@ -23,6 +25,11 @@
         <div class="form-group">
             <label for="produtos">Produtos:</label>
             <textarea id="produtos" rows="4" style="width: 100%" required></textarea>
+        </div>
+
+        <div class="form-group">
+            <label for="observacoes">Observações:</label>
+            <textarea id="observacoes" rows="2" style="width: 100%"></textarea>
         </div>
 
         <div class="form-group">
@@ -51,7 +58,13 @@
     </form>
 
     <script>
+        let numeroPedidoAtual = 0;
+
         window.onload = function() {
+            // Recupera o último número de pedido ou inicia do 1
+            numeroPedidoAtual = parseInt(localStorage.getItem('ultimoNumeroPedido') || '0');
+            atualizarNumeroPedido();
+
             // Máscara para telefone
             var telefoneInput = document.getElementById('telefone');
             VMasker(telefoneInput).maskPattern('(99) 99999-9999');
@@ -66,22 +79,38 @@
             });
         }
 
+        function atualizarNumeroPedido() {
+            numeroPedidoAtual++;
+            localStorage.setItem('ultimoNumeroPedido', numeroPedidoAtual.toString());
+            document.getElementById('numeroPedido').textContent = `Pedido Nº ${numeroPedidoAtual}`;
+        }
+
+        function formatarDataHora() {
+            const agora = new Date();
+            return agora.toLocaleString('pt-BR');
+        }
+
         function imprimirPedido() {
             // Coleta os dados do formulário
             const nome = document.getElementById('nome').value;
             const telefone = document.getElementById('telefone').value;
             const produtos = document.getElementById('produtos').value;
+            const observacoes = document.getElementById('observacoes').value;
             const pagamento = document.getElementById('pagamento').value;
             const endereco = document.getElementById('endereco').value;
             const valor = document.getElementById('valor').value;
+            const dataHora = formatarDataHora();
 
             // Formata o texto para impressão
             const textoImpressao = 
                 "PEDIDO\n" +
                 "=================\n" +
+                `Nº ${numeroPedidoAtual}\n` +
+                `Data/Hora: ${dataHora}\n` +
                 `Cliente: ${nome}\n` +
                 `Telefone: ${telefone}\n` +
                 `\nProdutos:\n${produtos}\n` +
+                (observacoes ? `\nObservações:\n${observacoes}\n` : '') +
                 `\nForma de Pagamento: ${pagamento}\n` +
                 `Endereço: ${endereco}\n` +
                 `Valor Total: ${valor}\n` +
@@ -99,9 +128,13 @@
                 document.getElementById('nome').value = '';
                 document.getElementById('telefone').value = '';
                 document.getElementById('produtos').value = '';
+                document.getElementById('observacoes').value = '';
                 document.getElementById('pagamento').value = '';
                 document.getElementById('endereco').value = '';
                 document.getElementById('valor').value = '';
+
+                // Atualiza o número do próximo pedido
+                atualizarNumeroPedido();
 
                 // Foca no primeiro campo para novo pedido
                 document.getElementById('nome').focus();
