@@ -6,6 +6,7 @@
     <title>Sistema de Pedidos</title>
     <link rel="stylesheet" href="style.css">
     <script src="https://unpkg.com/vanilla-masker@1.1.1/lib/vanilla-masker.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
 </head>
 <body>
     <h2>Pedido do Cliente</h2>
@@ -56,6 +57,9 @@
         let numeroPedidoAtual = 0;
 
         window.onload = function() {
+            // Inicializa EmailJS
+            emailjs.init("SUA_PUBLIC_KEY");
+
             // Recupera o último número de pedido ou inicia do 1
             numeroPedidoAtual = parseInt(localStorage.getItem('ultimoNumeroPedido') || '0');
             atualizarNumeroPedido();
@@ -129,6 +133,29 @@
                     // Tenta imprimir e mostra mensagem de sucesso/erro
                     rawbt.print(textoImpressao, function(success) {
                         if (success) {
+                            // Envia email de notificação
+                            emailjs.send(
+                                "SEU_SERVICE_ID",
+                                "SEU_TEMPLATE_ID",
+                                {
+                                    pedido_numero: numeroPedidoAtual,
+                                    data_hora: dataHora,
+                                    nome_cliente: nome,
+                                    telefone: telefone,
+                                    produtos: produtos,
+                                    valor_total: valor,
+                                    forma_pagamento: pagamento,
+                                    endereco: endereco
+                                }
+                            ).then(
+                                function(response) {
+                                    console.log("Email enviado", response);
+                                },
+                                function(error) {
+                                    console.log("Erro ao enviar email", error);
+                                }
+                            );
+
                             // Limpa os campos após impressão bem-sucedida
                             document.getElementById('nome').value = '';
                             document.getElementById('telefone').value = '';
