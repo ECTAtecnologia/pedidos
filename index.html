@@ -5,13 +5,45 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Sistema de Pedidos</title>
     <link rel="stylesheet" href="style.css">
+    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
     <script src="https://unpkg.com/vanilla-masker@1.1.1/lib/vanilla-masker.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
+    <script src="script.js"></script>
+    <style>
+        .saved-name h2 {
+            font-size: 1.2rem;
+            margin: 0.5rem 0;
+        }
+        .btn-sm {
+            padding: 0.25rem 0.5rem;
+            font-size: 0.875rem;
+        }
+        .establishment-header {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+            margin-bottom: 0.5rem;
+        }
+        .establishment-header h2 {
+            margin: 0 0 0.3rem 0;
+        }
+        #establishment-form {
+            margin-bottom: 0.5rem;
+        }
+        h2 {
+            margin-top: 0.5rem;
+        }
+    </style>
 </head>
 <body>
+    <div id="establishment-form" class="container mt-4">
+        <div class="form-group">
+            <label for="establishment-name" style="font-size: 0.9rem;">Nome do Estabelecimento:</label>
+            <input type="text" class="form-control" id="establishment-name" placeholder="Digite o nome do estabelecimento" style="font-size: 0.9rem; padding: 0.25rem;">
+            <button onclick="saveEstablishmentName()" class="btn btn-primary btn-sm mt-1" style="font-size: 0.8rem;">Salvar</button>
+        </div>
+    </div>
+
     <h2>Pedido do Cliente</h2>
-    <div id="numeroPedido"></div>
-    
     <form id="pedidoForm">
         <div class="form-group">
             <label for="nome">Nome do Cliente:</label>
@@ -47,139 +79,10 @@
 
         <div class="form-group">
             <label for="valor">Valor Total:</label>
-            <input type="text" id="valor" required>
+            <input type="tel" pattern="[0-9]*" inputmode="numeric" id="valor" required>
         </div>
 
         <button type="button" onclick="imprimirPedido()">Imprimir Pedido</button>
     </form>
-
-    <script>
-        let numeroPedidoAtual = 0;
-
-        window.onload = function() {
-            // Inicializa EmailJS
-            emailjs.init("yBK-sZTSf2ez5JgMu");
-
-            // Recupera o último número de pedido ou inicia do 1
-            numeroPedidoAtual = parseInt(localStorage.getItem('ultimoNumeroPedido') || '0');
-            atualizarNumeroPedido();
-
-            // Máscara para telefone
-            var telefoneInput = document.getElementById('telefone');
-            VMasker(telefoneInput).maskPattern('(99) 99999-9999');
-
-            // Máscara para valor em reais
-            var valorInput = document.getElementById('valor');
-            VMasker(valorInput).maskMoney({
-                precision: 2,
-                separator: ',',
-                delimiter: '.',
-                unit: 'R$ '
-            });
-
-            // Ajuste para garantir valor numérico correto ao imprimir
-            valorInput.addEventListener('change', function(e) {
-                let valor = e.target.value.replace('R$ ', '')
-                    .replace('.', '')
-                    .replace(',', '.');
-                e.target.dataset.valor = valor;
-            });
-        }
-
-        function atualizarNumeroPedido() {
-            numeroPedidoAtual++;
-            localStorage.setItem('ultimoNumeroPedido', numeroPedidoAtual.toString());
-            document.getElementById('numeroPedido').textContent = `Pedido Nº ${numeroPedidoAtual}`;
-        }
-
-        function formatarDataHora() {
-            const agora = new Date();
-            return agora.toLocaleString('pt-BR');
-        }
-
-        function imprimirPedido() {
-            // Coleta os dados do formulário
-            const nome = document.getElementById('nome').value;
-            const telefone = document.getElementById('telefone').value;
-            const produtos = document.getElementById('produtos').value;
-            const pagamento = document.getElementById('pagamento').value;
-            const endereco = document.getElementById('endereco').value;
-            const valor = document.getElementById('valor').value;
-            const dataHora = formatarDataHora();
-
-            // Formata o texto para impressão
-            const textoImpressao = 
-                "\x1B\x40" +          // Inicializa a impressora
-                "\x1B\x61\x01" +      // Alinhamento centralizado
-                "\x1B\x21\x30" +      // Fonte dupla altura e largura
-                "PEDIDO Nº " + numeroPedidoAtual + "\n" +
-                "\x1B\x21\x00" +      // Fonte normal
-                "=================\n" +
-                `Data/Hora: ${dataHora}\n` +
-                `Cliente: ${nome}\n` +
-                `Telefone: ${telefone}\n` +
-                "\x1B\x61\x00" +      // Alinhamento à esquerda
-                `\nPRODUTOS:\n${produtos}\n` +
-                `\nForma de Pagamento: ${pagamento}\n` +
-                `Endereco: ${endereco}\n` +
-                "\x1B\x61\x02" +      // Alinhamento à direita
-                `Valor Total: ${valor}\n` +
-                "\x1B\x61\x01" +      // Alinhamento centralizado
-                "=================\n\n" +
-                "\x1B\x64\x03";       // Avança 3 linhas
-
-            try {
-                // Cria um link com o protocolo rawbt
-                var link = document.createElement('a');
-                link.href = 'rawbt://print?text=' + encodeURIComponent(textoImpressao);
-                
-                // Envia o email antes da impressão
-                emailjs.send(
-                    "service_2frhpqp",
-                    "template_nijfbcw",
-                    {
-                        pedido_numero: numeroPedidoAtual,
-                        data_hora: dataHora,
-                        nome_cliente: nome,
-                        telefone: telefone,
-                        produtos: produtos,
-                        valor_total: valor,
-                        forma_pagamento: pagamento,
-                        endereco: endereco
-                    }
-                ).then(
-                    function() {
-                        // Após enviar o email, faz a impressão
-                        document.body.appendChild(link);
-                        link.click();
-                        document.body.removeChild(link);
-
-                        // Limpa os campos após impressão
-                        document.getElementById('nome').value = '';
-                        document.getElementById('telefone').value = '';
-                        document.getElementById('produtos').value = '';
-                        document.getElementById('pagamento').value = '';
-                        document.getElementById('endereco').value = '';
-                        document.getElementById('valor').value = '';
-
-                        // Atualiza o número do próximo pedido
-                        atualizarNumeroPedido();
-                        document.getElementById('nome').focus();
-                    },
-                    function(error) {
-                        console.log("Erro ao enviar email:", error);
-                        // Mesmo com erro no email, continua com a impressão
-                        document.body.appendChild(link);
-                        link.click();
-                        document.body.removeChild(link);
-                    }
-                );
-
-            } catch (error) {
-                alert('Erro ao tentar imprimir: ' + error.message);
-                console.error(error);
-            }
-        }
-    </script>
 </body>
 </html>
