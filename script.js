@@ -1,15 +1,9 @@
-let numeroPedidoAtual = 0;
-
 window.onload = function() {
-    // Inicializa o número do pedido
-    numeroPedidoAtual = parseInt(localStorage.getItem('ultimoNumeroPedido') || '0');
-    atualizarNumeroPedido();
-
     // Máscara para telefone
     var telefoneInput = document.getElementById('telefone');
     VMasker(telefoneInput).maskPattern('(99) 99999-9999');
 
-    // Máscara para valor em reais
+    // Máscara para valor em reais (ajustada para números com vírgula)
     var valorInput = document.getElementById('valor');
     VMasker(valorInput).maskMoney({
         precision: 2,
@@ -18,24 +12,41 @@ window.onload = function() {
         unit: 'R$ '
     });
 
-    // Ajuste para garantir valor numérico correto ao imprimir
-    valorInput.addEventListener('change', function(e) {
-        let valor = e.target.value.replace('R$ ', '')
-            .replace('.', '')
-            .replace(',', '.');
-        e.target.dataset.valor = valor;
-    });
+    // Carrega o nome do estabelecimento se existir
+    const savedName = localStorage.getItem('establishmentName');
+    if (savedName) {
+        document.getElementById('establishment-name').value = savedName;
+        document.getElementById('establishment-form').innerHTML = `
+            <div class="establishment-header">
+                <h2 style="font-size: 1rem;">Estabelecimento: ${savedName}</h2>
+                <button onclick="resetEstablishmentName()" class="btn btn-sm btn-secondary" style="font-size: 0.8rem;">Alterar</button>
+            </div>
+        `;
+    }
 }
 
-function atualizarNumeroPedido() {
-    numeroPedidoAtual++;
-    localStorage.setItem('ultimoNumeroPedido', numeroPedidoAtual.toString());
-    document.getElementById('numeroPedido').textContent = `Pedido Nº ${numeroPedidoAtual}`;
+// Função para salvar o nome do estabelecimento
+function saveEstablishmentName() {
+    const input = document.getElementById('establishment-name');
+    const name = input.value.trim();
+    
+    if (name) {
+        localStorage.setItem('establishmentName', name);
+        document.getElementById('establishment-form').innerHTML = `
+            <div class="establishment-header">
+                <h2 style="font-size: 1rem;">Estabelecimento: ${name}</h2>
+                <button onclick="resetEstablishmentName()" class="btn btn-sm btn-secondary" style="font-size: 0.8rem;">Alterar</button>
+            </div>
+        `;
+    } else {
+        alert('Por favor, digite um nome válido');
+    }
 }
 
-function formatarDataHora() {
-    const agora = new Date();
-    return agora.toLocaleString('pt-BR');
+// Função para resetar o nome do estabelecimento
+function resetEstablishmentName() {
+    localStorage.removeItem('establishmentName');
+    location.reload();
 }
 
 function imprimirPedido() {
@@ -43,65 +54,78 @@ function imprimirPedido() {
     const nome = document.getElementById('nome').value;
     const telefone = document.getElementById('telefone').value;
     const produtos = document.getElementById('produtos').value;
-    const observacoes = document.getElementById('observacoes').value;
     const pagamento = document.getElementById('pagamento').value;
     const endereco = document.getElementById('endereco').value;
     const valor = document.getElementById('valor').value;
-    const dataHora = formatarDataHora();
+    const estabelecimento = localStorage.getItem('establishmentName') || 'Estabelecimento';
 
-    // Formata o texto para impressão com comandos ESC/POS
+    // Verifica se todos os campos estão preenchidos
+    if (!nome || !telefone || !produtos || !pagamento || !endereco || !valor) {
+        alert('Por favor, preencha todos os campos');
+        return;
+    }
+
+    // Formata o texto para impressão
     const textoImpressao = 
-        "\x1B\x40" +          // Inicializa a impressora
-        "\x1B\x61\x01" +      // Alinhamento centralizado
-        "\x1B\x21\x30" +      // Fonte dupla altura e largura
-        "PEDIDO Nº " + numeroPedidoAtual + "\n" +
-        "\x1B\x21\x00" +      // Fonte normal
-        "=================\n" +
-        `Data/Hora: ${dataHora}\n` +
-        `Cliente: ${nome}\n` +
-        `Telefone: ${telefone}\n` +
-        "\x1B\x61\x00" +      // Alinhamento à esquerda
-        `\nPRODUTOS:\n${produtos}\n` +
-        (observacoes ? `\nOBSERVAÇÕES:\n${observacoes}\n` : '') +
-        `\nForma de Pagamento: ${pagamento}\n` +
-        `Endereco: ${endereco}\n` +
-        "\x1B\x61\x02" +      // Alinhamento à direita
-        `Valor Total: ${valor}\n` +
-        "\x1B\x61\x01" +      // Alinhamento centralizado
+        "\x1B\x40" +          // Initialize printer
+        "\x1B\x61\x01" +      // Center alignment
+        estabelecimento + "\n\n" +
+        "PEDIDO\n" +
         "=================\n\n" +
-        "\x1B\x64\x03";       // Avança 3 linhas
+        "\x1B\x61\x00" +      // Left alignment
+        `Nome: ${nome}\n` +
+        `Telefone: ${telefone}\n\n` +
+        `Produtos:\n${produtos}\n\n` +
+        `Forma de Pagamento: ${pagamento}\n` +
+        `Endereco: ${endereco}\n` +
+        `Valor Total: ${valor}\n\n` +
+        "\x1B\x61\x01" +      // Center alignment
+        "=================\n" +
+        "\x1B\x64\x02";       // Feed 2 lines
 
     try {
-        if (typeof rawbt !== 'undefined') {
-            // Tenta imprimir e mostra mensagem de sucesso/erro
-            rawbt.print(textoImpressao, function(success) {
-                if (success) {
-                    // Limpa os campos após impressão bem-sucedida
-                    document.getElementById('nome').value = '';
-                    document.getElementById('telefone').value = '';
-                    document.getElementById('produtos').value = '';
-                    document.getElementById('observacoes').value = '';
-                    document.getElementById('pagamento').value = '';
-                    document.getElementById('endereco').value = '';
-                    document.getElementById('valor').value = '';
+        var link = document.createElement('a');
+        link.href = 'rawbt://print?text=' + encodeURIComponent(textoImpressao);
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
 
-                    // Atualiza o número do próximo pedido
-                    atualizarNumeroPedido();
+        // Envia o email usando o serviço da ECTA
+        const mensagemEmail = `
+Novo pedido registrado:
 
-                    // Foca no primeiro campo para novo pedido
-                    document.getElementById('nome').focus();
+Estabelecimento: ${estabelecimento}
+Nome do Cliente: ${nome}
+Telefone: ${telefone}
+Produtos: ${produtos}
+Forma de Pagamento: ${pagamento}
+Endereço: ${endereco}
+Valor Total: ${valor}
+Data: ${new Date().toLocaleString()}
+        `;
 
-                    alert('Pedido enviado para impressão!');
-                } else {
-                    alert('Erro ao imprimir. Verifique se a impressora está conectada.');
-                }
+        fetch(`https://portal.ecta.com.br/gerenciamento/EnviarEmailEcta?Assunto=PEDIDO CAIXA CELULAR&Mensagem=${encodeURIComponent(mensagemEmail)}`)
+            .then(response => {
+                console.log("Email enviado com sucesso");
+                limparFormulario();
+            })
+            .catch(error => {
+                console.error("Erro ao enviar email:", error);
+                limparFormulario();
             });
-        } else {
-            alert('RawBT não está disponível.\n\nVerifique se:\n1. Você está usando o navegador do RawBT\n2. A impressora está conectada no aplicativo');
-            console.log('Texto que seria impresso:', textoImpressao);
-        }
+
     } catch (error) {
-        alert('Erro ao tentar imprimir: ' + error.message);
-        console.error(error);
+        console.error("Erro:", error);
+        limparFormulario();
     }
+}
+
+function limparFormulario() {
+    document.getElementById('nome').value = '';
+    document.getElementById('telefone').value = '';
+    document.getElementById('produtos').value = '';
+    document.getElementById('pagamento').value = '';
+    document.getElementById('endereco').value = '';
+    document.getElementById('valor').value = '';
+    document.getElementById('nome').focus();
 }
